@@ -3,12 +3,16 @@ package kr.co.a20200323_01_loginandsignup.Util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import javax.security.auth.PrivateCredentialPermission;
+
 public class ContextUtil {
 
     private static final String prefName = "myPref";
 
 //    항목명도 자동완성 지원 할수 있도록 미리 변수함
     private static final String EMAIL = "EMAIL";
+
+    private static final String ID_CHECK = "ID_CHECK";
 
 //    해당 항목값을 저장<setter> / 조회 하는 메소드 두개<getter>
 
@@ -33,5 +37,24 @@ public class ContextUtil {
 //        저장된 값이 없다면, 빈칸으로 주도록.
         return pref.getString(EMAIL,"");
     }
+
+    public static void setIdCheck(Context context, boolean isCheck) {
+
+        SharedPreferences pref = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
+
+        pref.edit().putBoolean(ID_CHECK, isCheck).apply();
+
+    }
+
+
+
+    public static boolean isIdCheck(Context context) {
+
+        SharedPreferences pref = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
+
+        return pref.getBoolean(ID_CHECK, true);
+
+    }
+
 
 }
