@@ -9,8 +9,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import kr.co.a20200323_01_loginandsignup.Util.ContextUtil;
+import kr.co.a20200323_01_loginandsignup.Util.ServerUtil;
 import kr.co.a20200323_01_loginandsignup.databinding.ActivityMainBinding;
 
 public class MainActivity extends baseActivity {
@@ -75,8 +80,80 @@ public class MainActivity extends baseActivity {
                 }
 
 
+                String inputEmail = binding.emailEdt.getText().toString();
+                String inputpw= binding.pwEdt.getText().toString();
 
-            }
+                ServerUtil.postRequestLogin(mContext, inputEmail, inputpw, new ServerUtil.JsonResponseHandler() {
+
+                    @Override
+
+                    public void onResponse(JSONObject json) {
+
+//                        응답실험코드는 -> 비동기 처리가 반드시 필요함
+//                        비동기 : 다른 할 일들을 하다가, 완료 되면 별도로 실행 해주자
+//                        Okhttp : 비동기 처리를 자동으로 지원 -> 별도 쓰레드가 알아서 진행
+//                        => 이 onResponse는 다른 쓰레드가 돌리고 있다.
+//                        UI동작은 메인쓰레드가 전용으로 처리함.
+//                        => 다른 쓰레드가
+
+                        Log.d("JSON내용-메인에서", json.toString());
+
+                        try {
+                            final String message = json.getString("message");
+                            Log.d("서버가주는 메시지",message);
+
+                            int code = json.getInt("code");
+                            Log.d("서버가 주는 코드",code+"");
+
+                            if (code == 200){
+//                       해당 기능이 성공적으로 동작
+//                                로그인 성공
+
+                                JSONObject data = json.getJSONObject("data");
+                                JSONObject user = data.getJSONObject("user");
+                                String token = data.getString("token");
+
+//                                로그인한 사람의 이름을 토스트로.
+                                final String name = user.getString("name");
+                                final String phone = user.getString("phone");
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(mContext, String.format("%s/%s",name,phone), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+
+                            }
+                            else {
+//                                뭔가 문제가 있었다.
+
+//                                Toast를 띄우는데 앱이 죽는다! => UI쓰레드
+//                                조치: UITHread 안에서 토스트를 띄우도록 처리
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(mContext,message,Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+
+
+
+
+                    }
         });
 
     }
